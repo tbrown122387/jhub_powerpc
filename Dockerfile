@@ -1,53 +1,70 @@
 # Use a base image that supports ppc64le architecture
 FROM ubuntu:20.04
 
-# Install system dependencies including wget, curl, bzip2, ca-certificates, nodejs, npm
+# Set timezone to US Eastern Time (modify if needed)
+ENV TZ=America/New_York
+RUN ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
+    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     bzip2 \
     curl \
     ca-certificates \
-    nodejs \
-    npm \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Download Miniconda installer for ppc64le and install it
+# Install NVM
+ENV NVM_DIR=/root/.nvm
+RUN curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+
+# Install Node.js and npm using NVM
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 18 && nvm use 18 && nvm alias default 18"
+
+# Set Node.js and npm in the PATH
+ENV PATH="/root/.nvm/versions/node/v18.0.0/bin:$PATH"
+
+# Verify Node.js and npm installation
+RUN bash -c "source $NVM_DIR/nvm.sh && node -v && npm -v"
+
+# Install yarn and configurable-http-proxy globally
+RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g yarn configurable-http-proxy"
+
+# Download and install Miniconda
 RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-ppc64le.sh && \
     chmod +x Miniconda3-latest-Linux-ppc64le.sh && \
     ./Miniconda3-latest-Linux-ppc64le.sh -b && \
     rm Miniconda3-latest-Linux-ppc64le.sh
 
-# Add Miniconda to PATH (make sure it's available for future commands)
+# Add Miniconda to PATH
 ENV PATH="/root/miniconda3/bin:$PATH"
 
 # Ensure conda is available
-RUN /root/miniconda3/bin/conda --version
+RUN conda --version
 
-# Install mamba using conda (if it's not already installed)
-RUN /root/miniconda3/bin/conda install mamba -c conda-forge
+# Install mamba using conda
+RUN conda install mamba -c conda-forge -y
 
-# Install JupyterHub and other dependencies using mamba
-RUN /root/miniconda3/bin/mamba install --yes jupyterhub-singleuser \
-    && /root/miniconda3/bin/mamba install --yes jupyterlab \
-    && /root/miniconda3/bin/mamba install --yes nbclassic \
-    && /root/miniconda3/bin/mamba install --yes notebook>=7.2.2
-
-# Install configurable-http-proxy to handle JupyterHub traffic
-RUN npm install -g configurable-http-proxy
+# Install JupyterHub and dependencies using mamba
+RUN mamba install --yes jupyterhub-singleuser jupyterlab nbclassic "notebook>=7.2.2"
 
 # Generate JupyterHub server configuration
-RUN /root/miniconda3/bin/jupyterhub --generate-config
+RUN jupyterhub --generate-config
 
-# Clean up and fix permissions (with checks for required utilities)
-RUN /root/miniconda3/bin/mamba clean --all -f -y && \
-    /root/miniconda3/bin/jupyter lab clean && \
+# Create required directories and set proper permissions
+RUN mkdir -p /home/root && chmod -R 777 /home/root
+
+# Clean up and fix permissions
+RUN mamba clean --all -f -y && \
+    jupyter lab clean || echo "Jupyter Lab Clean Failed (probably no staging directory)" && \
     rm -rf "/root/.cache/yarn" && \
-    chmod -R 777 /root/miniconda3 && \
-    chmod -R 777 /home/root
+    chmod -R 777 /root/miniconda3
 
 # Expose the necessary ports (JupyterHub default is 8000)
 EXPOSE 8000
 
-# Optional: Add a default command to start JupyterHub
+# Default command to start JupyterHub
 CMD ["jupyterhub"]
 
