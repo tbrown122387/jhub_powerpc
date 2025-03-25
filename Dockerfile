@@ -69,8 +69,8 @@ RUN mamba clean --all -f -y && \
     rm -rf "/root/.cache/yarn" && \
     chmod -R 777 /root/miniconda3
 
-
 # Set environment variables
+ENV JUPYTERHUB_SERVICE_URL=http://localhost:8888
 ENV JUPYTERHUB_CONFIG /jupyterhub_config.py
 
 # Modify the jupyterhub_config.py to set IP and Port

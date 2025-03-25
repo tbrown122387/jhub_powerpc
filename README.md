@@ -25,3 +25,24 @@ docker build -t my-jupyter-ppc64le .
 docker run -d -p 8888:8888 my-jupyter-ppc64le
 ```
 
+Instructions to set a password
+```bash
+sudo docker exec -it my-jupyterhub bash
+useradd -m -s /bin/bash adminuser
+passwd adminuser
+apt update && apt install -y vim
+vim /jupyterhub_config.py
+```
+
+and edit the file to have
+
+```
+c.Authenticator.admin_users = {"adminuser"}
+c.Authenticator.allowed_users = {"adminuser"}
+c.JupyterHub.authenticator_class = 'jupyterhub.auth.LocalAuthenticator'
+```
+
+then restart the container:
+```
+sudo docker restart <your-container-name>
+```
