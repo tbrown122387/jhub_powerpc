@@ -21,4 +21,8 @@ This Docker image provides a JupyterHub environment designed to run on **PowerPC
 ```bash
 git clone https://github.com/tbrown122387/jhub_powerpc.git
 cd jhub_powerpc
+docker build -t my-jupyter-ppc64le .
+
+docker run -p 8888:8888 my-jupyter-ppc64le
+
 
