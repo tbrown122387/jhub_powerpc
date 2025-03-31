@@ -1,88 +1,52 @@
-# Use a base image that supports ppc64le architecture
-FROM ubuntu:20.04
+# Start from jupyter scipy notebook base image
+FROM jupyter/scipy-notebook:latest
 
-# Set timezone
-ENV TZ=America/New_York
-RUN ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+USER root
 
-# Install system dependencies
+# Install R and essential R packages
 RUN apt-get update && apt-get install -y \
-    wget \
-    bzip2 \
-    curl \
-    ca-certificates \
-    git \
-    build-essential \
+    r-base \
+    r-base-dev \
+    libxml2-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install NVM
-ENV NVM_DIR=/root/.nvm
-RUN curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+# Install IRkernel for Jupyter
+RUN R -e "install.packages(c('IRkernel', 'tidyverse'), repos='http://cran.rstudio.com/')" \
+    && R -e "IRkernel::installspec(user = FALSE)"
 
-# Install Node.js and npm using NVM
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 18 && nvm use 18 && nvm alias default 18"
+# Switch back to jovyan user (default jupyter user)
+USER ${NB_UID}
 
-# Set Node.js and npm in the PATH (make sure they are accessible everywhere)
-ENV PATH="/root/.nvm/versions/node/v18.20.7/bin:$PATH"
+# Install additional Python packages if needed
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    matplotlib \
+    seaborn \
+    scikit-learn
 
-# Verify Node.js and npm installation
-RUN bash -c "source $NVM_DIR/nvm.sh && node -v && npm -v"
+# Create config directory
+RUN mkdir -p ~/.jupyter
 
-# Install yarn and configurable-http-proxy globally
-RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g yarn configurable-http-proxy"
+# Generate config file
+RUN jupyter notebook --generate-config
 
-# Ensure configurable-http-proxy is available globally
-RUN echo "export PATH=\$PATH:/root/.nvm/versions/node/v18.20.7/bin" >> /root/.bashrc
+# Configure Jupyter
+RUN echo "c.NotebookApp.ip = '0.0.0.0'" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.allow_root = False" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.open_browser = False" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.certfile = '/home/jovyan/ssl/jupyter.pem'" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.keyfile = '/home/jovyan/ssl/jupyter.key'" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.allow_remote_access = True" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.token = ''" >> ~/.jupyter/jupyter_notebook_config.py \
+    && echo "c.NotebookApp.password = ''" >> ~/.jupyter/jupyter_notebook_config.py
 
-# Download and install Miniconda
-RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-ppc64le.sh && \
-    chmod +x Miniconda3-latest-Linux-ppc64le.sh && \
-    ./Miniconda3-latest-Linux-ppc64le.sh -b && \
-    rm Miniconda3-latest-Linux-ppc64le.sh
-
-# Add Miniconda to PATH
-ENV PATH="/root/miniconda3/bin:$PATH"
-
-# Ensure conda is available
-RUN conda --version
-
-# Install mamba using conda
-RUN conda install mamba -c conda-forge -y
-
-# Install JupyterHub and dependencies using mamba
-RUN mamba install --yes jupyterhub-singleuser jupyterlab nbclassic "notebook>=7.2.2"
-
-# Generate JupyterHub server configuration
-RUN jupyterhub --generate-config
-
-# Modify jupyterhub_config.py to set the correct command
-RUN sed -i "/^# c.JupyterHub.proxy_cmd = \[\]/a c.ConfigurableHTTPProxy.command = ['/root/.nvm/versions/node/v18.20.7/bin/configurable-http-proxy']" /jupyterhub_config.py
-
-# Create required directories and set proper permissions
-RUN mkdir -p /home/root && chmod -R 777 /home/root
-
-# Clean up and fix permissions
-RUN mamba clean --all -f -y && \
-    jupyter lab clean || echo "Jupyter Lab Clean Failed (probably no staging directory)" && \
-    rm -rf "/root/.cache/yarn" && \
-    chmod -R 777 /root/miniconda3
-
-# Set environment variables
-ENV JUPYTERHUB_SERVICE_URL=http://localhost:8888
-ENV JUPYTERHUB_CONFIG /jupyterhub_config.py
-
-# Modify the jupyterhub_config.py to set IP and Port
-RUN echo "c.JupyterHub.ip = '0.0.0.0'" >> $JUPYTERHUB_CONFIG && \
-    echo "c.JupyterHub.port = 8888" >> $JUPYTERHUB_CONFIG
-
-# Expose the necessary ports (JupyterHub default is 8000)
+# Expose the port Jupyter will run on
 EXPOSE 8888
 
-# Ensure that the configurable-http-proxy path is set during JupyterHub startup
-ENV PATH="/root/.nvm/versions/node/v18.20.7/bin:$PATH"
-
-# Default command to start JupyterHub with npx
-CMD ["bash", "-c", "source $NVM_DIR/nvm.sh && exec npx configurable-http-proxy & exec jupyterhub"]
+# Start Jupyter notebook
+CMD ["jupyter", "notebook", "--no-browser", "--ip=0.0.0.0", "--port=8888"]
 
