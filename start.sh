@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Get user information
-export USER_ID=$(id -u)
-export USER_NAME=$(whoami)
-export USER_HOME=$HOME
+# Get user information and export for docker-compose
+export USER=$(whoami)
+export HOME=$(eval echo ~$USER)
 
 # Create SSL directory if it doesn't exist
 mkdir -p $HOME/jupyter-notebooks/ssl
@@ -16,8 +15,8 @@ if [ ! -f $HOME/jupyter-notebooks/ssl/jupyter.pem ]; then
         -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 fi
 
-# Start the services with current user info
-USER=$USER_NAME UID=$USER_ID HOME=$USER_HOME docker-compose up -d
+# Start the services
+docker-compose up -d
 
 # Get server IP
 SERVER_IP=$(hostname -I | awk '{print $1}')
