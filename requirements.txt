@@ -1,10 +1,4 @@
-# Core packages
-jupyter
-jupyterlab
-
-# Data analysis
-pandas
-numpy
+# Core packages are now installed via apt-get
 
 # Visualization
 matplotlib
