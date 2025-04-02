@@ -19,32 +19,19 @@ This Docker image provides a JupyterHub environment designed to run on **PowerPC
 ### Clone the repository
 
 ```bash
-git clone https://github.com/tbrown122387/jhub_powerpc.git
-cd jhub_powerpc
+wget https://github.com/tbrown122387/jhub_powerpc/archive/refs/heads/main.zip
+unzip main.zip -d ./
+cd jhub_powerpc-main
+```
+
+Generate some (temporary ssl stuff)
+```
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+```
+
+then build and run the image:
+
+```
 docker build -t my-jupyter-ppc64le .
 docker run -d -p 443:443 --name jhub my-jupyter-ppc64le
-```
-
-These are tentative things I do to try to set an admin password, but it hasn't been working lately...
-
-
-```bash
-sudo docker exec -it my-jupyterhub bash
-useradd -m -s /bin/bash adminuser
-passwd adminuser
-apt update && apt install -y vim
-vim /jupyterhub_config.py
-```
-
-and edit the file to have
-
-```
-c.Authenticator.admin_users = {"adminuser"}
-c.Authenticator.allowed_users = {"adminuser"}
-c.JupyterHub.authenticator_class = 'jupyterhub.auth.LocalAuthenticator'
-```
-
-then restart the container:
-```
-sudo docker restart jhub
 ```

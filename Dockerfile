@@ -24,7 +24,7 @@ RUN curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh |
 # Install Node.js and npm using NVM
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install 18 && nvm use 18 && nvm alias default 18"
 
-# Set Node.js and npm in the PATH (make sure they are accessible everywhere)
+# Set Node.js and npm in the PATH
 ENV PATH="/root/.nvm/versions/node/v18.20.7/bin:$PATH"
 
 # Verify Node.js and npm installation
@@ -52,37 +52,37 @@ RUN conda --version
 RUN conda install mamba -c conda-forge -y
 
 # Install JupyterHub and dependencies using mamba
-RUN mamba install --yes jupyterhub-singleuser jupyterlab nbclassic "notebook>=7.2.2"
+RUN mamba install --yes jupyterhub-singleuser jupyterlab nbclassic "notebook>=7.2.2" jupyterhub[localauth]
 
-# Generate JupyterHub server configuration
-RUN jupyterhub --generate-config
+# Create SSL directory
+RUN mkdir -p /etc/jupyterhub/ssl
 
-# Modify jupyterhub_config.py to set the correct command
-RUN sed -i "/^# c.JupyterHub.proxy_cmd = \[\]/a c.ConfigurableHTTPProxy.command = ['/root/.nvm/versions/node/v18.20.7/bin/configurable-http-proxy']" /jupyterhub_config.py
+# Copy SSL certificate and key (Make sure you have these files before building)
+COPY cert.pem /etc/jupyterhub/ssl/cert.pem
+COPY key.pem /etc/jupyterhub/ssl/key.pem
 
-# Create required directories and set proper permissions
-RUN mkdir -p /home/root && chmod -R 777 /home/root
+# Set correct permissions for SSL files
+RUN chmod 600 /etc/jupyterhub/ssl/cert.pem /etc/jupyterhub/ssl/key.pem
 
-# Clean up and fix permissions
-RUN mamba clean --all -f -y && \
-    jupyter lab clean || echo "Jupyter Lab Clean Failed (probably no staging directory)" && \
-    rm -rf "/root/.cache/yarn" && \
-    chmod -R 777 /root/miniconda3
+# Create JupyterHub config directory
+RUN mkdir -p /etc/jupyterhub
 
-# Set environment variables
-ENV JUPYTERHUB_SERVICE_URL=http://localhost:8888
-ENV JUPYTERHUB_CONFIG /jupyterhub_config.py
+# Generate JupyterHub server configuration with LocalAuthenticator
+# NB: change "taylor" to your system username you're using outside of Docker
+RUN echo "c.Authenticator.admin_users = {'taylor'}" > /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.JupyterHub.authenticator_class = 'jupyterhub.auth.LocalAuthenticator'" >> /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.LocalAuthenticator.create_system_users = True" >> /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.JupyterHub.ip = '0.0.0.0'" >> /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.JupyterHub.port = 443" >> /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.JupyterHub.ssl_cert = '/etc/jupyterhub/ssl/cert.pem'" >> /etc/jupyterhub/jupyterhub_config.py && \
+    echo "c.JupyterHub.ssl_key = '/etc/jupyterhub/ssl/key.pem'" >> /etc/jupyterhub/jupyterhub_config.py
 
-# Modify the jupyterhub_config.py to set IP and Port
-RUN echo "c.JupyterHub.ip = '0.0.0.0'" >> $JUPYTERHUB_CONFIG && \
-    echo "c.JupyterHub.port = 8888" >> $JUPYTERHUB_CONFIG
-
-# Expose the necessary ports (JupyterHub default is 8000)
-EXPOSE 8888
+# Expose SSL port
+EXPOSE 443
 
 # Ensure that the configurable-http-proxy path is set during JupyterHub startup
 ENV PATH="/root/.nvm/versions/node/v18.20.7/bin:$PATH"
 
-# Default command to start JupyterHub with npx
-CMD ["bash", "-c", "source $NVM_DIR/nvm.sh && exec npx configurable-http-proxy & exec jupyterhub"]
+# Default command to start JupyterHub with SSL
+CMD ["bash", "-c", "source $NVM_DIR/nvm.sh && exec npx configurable-http-proxy & exec jupyterhub --config /etc/jupyterhub/jupyterhub_config.py"]
 
