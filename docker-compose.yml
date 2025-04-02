@@ -7,14 +7,22 @@ services:
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:
-      - ${JUPYTER_NOTEBOOK_DIR:-${HOME}/jupyter-notebooks}:/home/jovyan/work
-      - ${JUPYTER_SSL_DIR:-${HOME}/jupyter-notebooks/ssl}:/home/jovyan/ssl
+      - jupyter-notebooks:/home/jupyter/work
+      - jupyter-ssl:/home/jupyter/ssl
     restart: unless-stopped
     environment:
       - JUPYTER_ENABLE_LAB=yes
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 1G 
+
+volumes:
+  jupyter-notebooks:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${JUPYTER_NOTEBOOK_DIR:-$HOME/jupyter-notebooks}
+  jupyter-ssl:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${JUPYTER_SSL_DIR:-$HOME/jupyter-notebooks/ssl} 
