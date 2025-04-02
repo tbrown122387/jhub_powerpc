@@ -1,0 +1,14 @@
+# Core packages
+jupyter
+jupyterlab
+
+# Data analysis
+pandas
+numpy
+
+# Visualization
+matplotlib
+seaborn
+
+# Machine learning
+scikit-learn 

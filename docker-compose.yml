@@ -15,7 +15,7 @@ services:
       - ${HOME}/jupyter-notebooks/ssl:/home/${USER}/ssl
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - LOCAL_USER_ID=$(id -u)
+      - LOCAL_USER_ID=${LOCAL_USER_ID}
       - LOCAL_USER_NAME=${USER}
     restart: unless-stopped
 

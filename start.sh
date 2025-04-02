@@ -3,6 +3,7 @@
 # Get user information and export for docker-compose
 export USER=$(whoami)
 export HOME=$(eval echo ~$USER)
+export LOCAL_USER_ID=$(id -u)
 
 # Create SSL directory if it doesn't exist
 mkdir -p $HOME/jupyter-notebooks/ssl
