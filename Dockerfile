@@ -5,7 +5,7 @@ FROM ubuntu:20.04
 ENV TZ=America/New_York
 RUN ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
-    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata
+    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y tzdata apt-utils
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
