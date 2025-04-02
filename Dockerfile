@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     # Python
     python3 \
     python3-pip \
+    python3-dev \
     # R
     r-base \
     r-base-dev \
@@ -19,8 +20,21 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libcurl4-openssl-dev \
     libssl-dev \
+    # Scientific computing dependencies
+    libopenblas-dev \
+    liblapack-dev \
+    gfortran \
+    # Build tools
+    build-essential \
+    cmake \
+    pkg-config \
+    # Additional dependencies
+    libblas-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN python3 -m pip install --upgrade pip setuptools wheel
 
 # Copy requirements files
 COPY requirements.txt /tmp/
