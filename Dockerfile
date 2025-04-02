@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     python3-numpy \
     python3-scipy \
     python3-pandas \
+    python3-markupsafe \
     # R
     r-base \
     r-base-dev \
