@@ -2,8 +2,12 @@ version: '3'
 
 services:
   jupyter:
-    build: .
-    container_name: jupyter-server
+    build: 
+      context: .
+      args:
+        - USER=${USER:-jupyter}
+    image: ${USER:-jupyter}/jupyter-notebook
+    container_name: ${USER:-jupyter}-jupyter-server
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:
