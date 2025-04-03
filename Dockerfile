@@ -37,8 +37,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip setuptools wheel
+# Upgrade pip and install core dependencies
+RUN python3 -m pip install --upgrade pip setuptools wheel && \
+    python3 -m pip install --upgrade "importlib-metadata<5.0" && \
+    python3 -m pip install --upgrade setuptools
 
 # Copy requirements files
 COPY requirements.txt /tmp/
