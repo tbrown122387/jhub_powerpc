@@ -36,21 +36,21 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     # Additional dependencies
     libblas-dev \
+    && apt-get remove -y python3-zmq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and handle pyzmq
+# Upgrade pip and install pyzmq
 RUN python3 -m pip install --upgrade pip && \
-    pip3 uninstall -y pyzmq && \
-    pip3 install --no-cache-dir pyzmq --ignore-installed
+    pip3 install --no-cache-dir pyzmq
 
 # Copy requirements files
 COPY requirements.txt /tmp/
 COPY r-requirements.R /tmp/
 
 # Install remaining Python packages
-RUN pip3 install --no-cache-dir --ignore-installed jupyterlab && \
-    pip3 install --no-cache-dir --ignore-installed -r /tmp/requirements.txt
+RUN pip3 install --no-cache-dir jupyterlab && \
+    pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # Install R packages
 RUN Rscript /tmp/r-requirements.R
