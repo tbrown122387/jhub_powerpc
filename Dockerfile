@@ -39,16 +39,18 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip
+# Upgrade pip and handle pyzmq
+RUN python3 -m pip install --upgrade pip && \
+    pip3 uninstall -y pyzmq && \
+    pip3 install --no-cache-dir pyzmq --ignore-installed
 
 # Copy requirements files
 COPY requirements.txt /tmp/
 COPY r-requirements.R /tmp/
 
 # Install remaining Python packages
-RUN pip3 install --no-cache-dir jupyterlab && \
-    pip3 install --no-cache-dir -r /tmp/requirements.txt
+RUN pip3 install --no-cache-dir --ignore-installed jupyterlab && \
+    pip3 install --no-cache-dir --ignore-installed -r /tmp/requirements.txt
 
 # Install R packages
 RUN Rscript /tmp/r-requirements.R
