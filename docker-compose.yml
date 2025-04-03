@@ -5,7 +5,7 @@ services:
     build: 
       context: .
       args:
-        - USER=${LOCAL_USER_NAME}
+        - USER=${LOCAL_USER_NAME:?LOCAL_USER_NAME must be set}
     image: ${LOCAL_USER_NAME}/jupyter-notebook
     container_name: ${LOCAL_USER_NAME}-jupyter-server
     ports:
@@ -16,7 +16,7 @@ services:
     environment:
       - JUPYTER_ENABLE_LAB=yes
       - LOCAL_USER_ID=${LOCAL_USER_ID:?LOCAL_USER_ID must be set}
-      - LOCAL_USER_NAME=${LOCAL_USER_NAME}
+      - LOCAL_USER_NAME=${LOCAL_USER_NAME:?LOCAL_USER_NAME must be set}
     restart: unless-stopped
 
 volumes:

@@ -1,9 +1,23 @@
 #!/bin/bash
 
+# Ensure we exit on any error
+set -e
+
 # Get user information and export for docker-compose
 export LOCAL_USER_NAME=$(whoami)
-export HOME=$(eval echo ~$LOCAL_USER_NAME)
 export LOCAL_USER_ID=$(id -u)
+export HOME=$(eval echo ~$LOCAL_USER_NAME)
+
+# Verify variables are set
+if [ -z "$LOCAL_USER_NAME" ]; then
+    echo "Error: Failed to get username"
+    exit 1
+fi
+
+if [ -z "$LOCAL_USER_ID" ]; then
+    echo "Error: Failed to get user ID"
+    exit 1
+fi
 
 # Create SSL directory if it doesn't exist
 mkdir -p $HOME/jupyter-notebooks/ssl
