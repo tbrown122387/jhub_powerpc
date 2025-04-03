@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
     python3-pandas \
     python3-markupsafe \
     python3-jinja2 \
-    python3-notebook \
     # R
     r-base \
     r-base-dev \
@@ -36,13 +35,13 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     # Additional dependencies
     libblas-dev \
-    && apt-get remove -y python3-zmq \
+    && apt-get remove -y python3-zmq python3-notebook python3-terminado \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install pyzmq
+# Upgrade pip and install core dependencies
 RUN python3 -m pip install --upgrade pip && \
-    pip3 install --no-cache-dir pyzmq
+    pip3 install --no-cache-dir pyzmq notebook terminado
 
 # Copy requirements files
 COPY requirements.txt /tmp/
