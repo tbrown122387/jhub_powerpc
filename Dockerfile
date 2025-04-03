@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     python3-numpy \
     python3-scipy \
     python3-pandas \
-    python3-markupsafe \
     # R
     r-base \
     r-base-dev \
@@ -40,7 +39,8 @@ RUN apt-get update && apt-get install -y \
 # Upgrade pip and install core dependencies
 RUN python3 -m pip install --upgrade pip setuptools wheel && \
     python3 -m pip install --upgrade "importlib-metadata<5.0" && \
-    python3 -m pip install --upgrade setuptools
+    python3 -m pip install --upgrade setuptools && \
+    python3 -m pip install --no-cache-dir "MarkupSafe==2.0.1"
 
 # Copy requirements files
 COPY requirements.txt /tmp/
