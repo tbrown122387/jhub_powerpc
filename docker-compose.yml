@@ -5,18 +5,18 @@ services:
     build: 
       context: .
       args:
-        - USER=${LOCAL_USER_NAME:?LOCAL_USER_NAME must be set}
-    image: ${LOCAL_USER_NAME}/jupyter-notebook
-    container_name: ${LOCAL_USER_NAME}-jupyter-server
+        USER: ${USER:?USER must be set}
+    image: ${USER}/jupyter-notebook
+    container_name: ${USER}-jupyter-server
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:
-      - ${HOME}:/home/${LOCAL_USER_NAME}/work
-      - ${HOME}/jupyter-notebooks/ssl:/home/${LOCAL_USER_NAME}/ssl
+      - ${HOME}:/home/${USER}/work
+      - ${HOME}/jupyter-notebooks/ssl:/home/${USER}/ssl
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - LOCAL_USER_ID=${LOCAL_USER_ID:?LOCAL_USER_ID must be set}
-      - LOCAL_USER_NAME=${LOCAL_USER_NAME:?LOCAL_USER_NAME must be set}
+      - LOCAL_USER_ID=${UID:?UID must be set}
+      - LOCAL_USER_NAME=${USER:?USER must be set}
     restart: unless-stopped
 
 volumes:

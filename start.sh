@@ -4,20 +4,9 @@
 set -e
 
 # Get user information and export for docker-compose
-export LOCAL_USER_NAME=$(whoami)
-export LOCAL_USER_ID=$(id -u)
-export HOME=$(eval echo ~$LOCAL_USER_NAME)
-
-# Verify variables are set
-if [ -z "$LOCAL_USER_NAME" ]; then
-    echo "Error: Failed to get username"
-    exit 1
-fi
-
-if [ -z "$LOCAL_USER_ID" ]; then
-    echo "Error: Failed to get user ID"
-    exit 1
-fi
+export USER=$(whoami)  # Using standard USER variable
+export HOME=$(eval echo ~$USER)
+export UID=$(id -u)    # Using standard UID variable
 
 # Create SSL directory if it doesn't exist
 mkdir -p $HOME/jupyter-notebooks/ssl
@@ -41,4 +30,4 @@ echo "Your notebooks will be stored in: $HOME"
 echo "Access Jupyter at: https://$SERVER_IP:${JUPYTER_PORT:-8888}"
 echo ""
 echo "To view the logs, run: docker-compose logs -f jupyter"
-echo "Running as user: $LOCAL_USER_NAME (ID: $LOCAL_USER_ID)" 
+echo "Running as user: $USER (ID: $UID)" 
