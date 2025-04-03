@@ -8,12 +8,13 @@ services:
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:
-      - ${HOME}:/home/${USER}/work
-      - ${HOME}/jupyter-notebooks/ssl:/home/${USER}/ssl
+      - ${HOME:-/tmp}:/home/${USER:-jupyter}/work
+      - ${HOME:-/tmp}/jupyter-notebooks/ssl:/home/${USER:-jupyter}/ssl
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - LOCAL_USER_ID=${UID:?UID must be set}
-      - LOCAL_USER_NAME=${USER:?USER must be set}
+      - LOCAL_USER_ID=${UID:-1000}
+      - LOCAL_USER_NAME=${USER:-jupyter}
+    container_name: ${USER:-jupyter}-jupyter-server
     restart: unless-stopped
 
 volumes:
