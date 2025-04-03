@@ -4,7 +4,7 @@ services:
   jupyter:
     build: 
       context: .
-    image: jupyter-notebook-py-R
+    image: jupyter-notebook-py-r
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:

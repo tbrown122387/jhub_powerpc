@@ -16,6 +16,10 @@ RUN apt-get update && apt-get install -y \
     python3-numpy \
     python3-scipy \
     python3-pandas \
+    python3-markupsafe \
+    python3-jinja2 \
+    python3-notebook \
+    python3-jupyterlab \
     # R
     r-base \
     r-base-dev \
@@ -36,19 +40,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install core dependencies
-RUN python3 -m pip install --upgrade pip setuptools wheel && \
-    python3 -m pip install --upgrade "importlib-metadata<5.0" && \
-    python3 -m pip install --upgrade setuptools && \
-    python3 -m pip install --no-cache-dir "MarkupSafe==2.0.1"
-
 # Copy requirements files
 COPY requirements.txt /tmp/
 COPY r-requirements.R /tmp/
 
-# Install Python packages
-RUN pip3 install --no-cache-dir jupyter jupyterlab && \
-    pip3 install --no-cache-dir -r /tmp/requirements.txt
+# Install remaining Python packages
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 # Install R packages
 RUN Rscript /tmp/r-requirements.R
