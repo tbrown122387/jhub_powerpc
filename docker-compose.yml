@@ -4,10 +4,7 @@ services:
   jupyter:
     build: 
       context: .
-      args:
-        USER: ${USER:?USER must be set}
-    image: ${USER}/jupyter-notebook
-    container_name: ${USER}-jupyter-server
+    image: jupyter-notebook-py-R
     ports:
       - "${JUPYTER_PORT:-8888}:8888"
     volumes:
