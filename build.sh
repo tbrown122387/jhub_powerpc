@@ -3,12 +3,6 @@
 # Exit on any error
 set -e
 
-# Check if Docker daemon is running
-if ! docker info > /dev/null 2>&1; then
-    echo "Error: Docker daemon is not running"
-    exit 1
-fi
-
 # Create required directories with default values
 mkdir -p /tmp/jupyter-notebooks/ssl
 
