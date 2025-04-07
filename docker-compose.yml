@@ -1,20 +1,21 @@
 version: '3'
 
 services:
-  jupyter:
+  jupyterhub:
     build: 
       context: .
     image: jupyter-notebook-py-r
     ports:
-      - "${JUPYTER_PORT:-8888}:8888"
+      - "${JUPYTER_PORT:-8000}:8000"
     volumes:
       - ${HOME:-/tmp}:/home/${USER:-jupyter}/work
       - ${HOME:-/tmp}/jupyter-notebooks/ssl:/home/${USER:-jupyter}/ssl
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - JUPYTER_ENABLE_LAB=yes
       - LOCAL_USER_ID=${UID:-1000}
       - LOCAL_USER_NAME=${USER:-jupyter}
-    container_name: ${USER:-jupyter}-jupyter-server
+    container_name: ${USER:-jupyter}-jupyterhub-server
     restart: unless-stopped
 
 volumes:

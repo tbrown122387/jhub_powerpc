@@ -46,6 +46,8 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     # Additional dependencies
     libblas-dev \
+    nodejs \
+    npm \
     && apt-get remove -y python3-zmq python3-notebook python3-terminado \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -54,22 +56,32 @@ RUN apt-get update && apt-get install -y \
 RUN python3 -m pip install --upgrade pip && \
     pip3 install --no-cache-dir pyzmq notebook terminado
 
+# Install JupyterHub and dependencies
+RUN python3 -m pip install --no-cache-dir \
+    jupyterhub \
+    jupyterlab \
+    sudospawner \
+    dockerspawner
+
 # Copy requirements files
 COPY requirements.txt /tmp/
 COPY r-requirements.R /tmp/
 
-# Install remaining Python packages
-RUN pip3 install --no-cache-dir jupyterlab
-
 # Install R packages
 RUN Rscript /tmp/r-requirements.R
+
+# Create jupyterhub config directory
+RUN mkdir -p /etc/jupyterhub
+
+# Copy configuration files
+COPY jupyterhub_config.py /etc/jupyterhub/
 
 # Create entrypoint script
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Expose the port Jupyter will run on
-EXPOSE 8888
+# Expose the port JupyterHub will run on
+EXPOSE 8000
 
 # Use entrypoint script
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

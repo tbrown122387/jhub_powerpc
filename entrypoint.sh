@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Add local user
-# Either use the LOCAL_USER_ID if passed in at runtime or fallback to 9001
-USER_ID=${LOCAL_USER_ID:-9001}
+# Either use the LOCAL_USER_ID if passed in at runtime or fallback to 1000
+USER_ID=${LOCAL_USER_ID:-1000}
 USER_NAME=${LOCAL_USER_NAME:-jupyter}
 
 echo "Starting with UID : $USER_ID"
 useradd --shell /bin/bash -u $USER_ID -o -c "" -m $USER_NAME
+export HOME=/home/$USER_NAME
 
 # Create jupyter config for this user
 mkdir -p /home/$USER_NAME/.jupyter
@@ -28,5 +29,5 @@ EOF
 # Fix permissions
 chown -R $USER_NAME:$USER_NAME /home/$USER_NAME
 
-# Switch to user
-exec gosu $USER_NAME jupyter notebook --no-browser --ip=0.0.0.0 --port=8888 
+# Start JupyterHub
+exec jupyterhub -f /etc/jupyterhub/jupyterhub_config.py 
