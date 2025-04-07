@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y \
     python3-pandas \
     python3-markupsafe \
     python3-jinja2 \
+    python3-matplotlib \
+    python3-seaborn \
+    python3-sklearn \
     # R
     r-base \
     r-base-dev \
@@ -48,8 +51,7 @@ COPY requirements.txt /tmp/
 COPY r-requirements.R /tmp/
 
 # Install remaining Python packages
-RUN pip3 install --no-cache-dir jupyterlab && \
-    pip3 install --no-cache-dir -r /tmp/requirements.txt
+RUN pip3 install --no-cache-dir jupyterlab
 
 # Install R packages
 RUN Rscript /tmp/r-requirements.R
