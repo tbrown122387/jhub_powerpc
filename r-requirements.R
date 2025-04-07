@@ -1,16 +1,29 @@
-# Install required R packages
-packages <- c(
-  # Core packages
-  'IRkernel',
-  
-  # Data manipulation and analysis
-  'tidyverse'
-  
-  # Add more packages here
+# Install required dependencies first
+deps <- c(
+    'purrr',
+    'tidyr',
+    'readr',
+    'cpp11',
+    'broom',
+    'dbplyr',
+    'ggplot2',
+    'googledrive',
+    'googlesheets4',
+    'haven',
+    'lubridate',
+    'modelr',
+    'readxl',
+    'ragg'
 )
 
-# Install packages
-install.packages(packages, repos='http://cran.rstudio.com/')
+# Install dependencies
+install.packages(deps, repos='https://cloud.r-project.org/')
+
+# Install main packages
+install.packages(c(
+    'tidyverse',
+    'IRkernel'
+), repos='https://cloud.r-project.org/')
 
 # Setup IRkernel
-IRkernel::installspec(user = FALSE) 
+IRkernel::installspec() 
